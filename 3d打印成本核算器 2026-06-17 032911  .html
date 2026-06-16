@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>工作室量产 - 3D打印成本核算器</title><style>*{box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}body{background:#f4f7fc;padding:20px;max-width:1600px;margin:0 auto}.container{background:#fff;border-radius:16px;padding:25px;box-shadow:0 4px 20px rgba(0,0,0,0.08)}.header-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:20px}.header-row h1{color:#1a2b4a;border-left:6px solid #0078d4;padding-left:15px;font-size:24px;margin:0}.header-row .btn-group{display:flex;gap:12px;flex-wrap:wrap}.header-row .btn{padding:8px 24px;border:none;border-radius:30px;font-weight:600;font-size:14px;cursor:pointer;transition:0.2s}.btn-success{background:#107c10;color:#fff}.btn-success:hover{background:#0a5e0a}.btn-danger{background:#d13438;color:#fff}.btn-danger:hover{background:#a1282b}.btn-primary{background:#0078d4;color:#fff}.btn-primary:hover{background:#005a9e}.btn-refresh{background:#6c757d;color:#fff;padding:4px 16px;border:none;border-radius:30px;font-weight:600;font-size:13px;cursor:pointer;transition:0.2s}.btn-refresh:hover{background:#5a6268}.timestamp{font-size:14px;font-weight:400;color:#5e6f8d}.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;background:#f8faff;padding:16px;border-radius:12px;margin-bottom:20px;border:1px solid #e6edf4}.settings-grid label{font-size:13px;font-weight:600;color:#334e68;display:flex;flex-direction:column;gap:3px}.settings-grid input{padding:6px 8px;border:1px solid #d0d9e8;border-radius:6px;font-size:14px;background:#fff}.collapsible{background:#f8faff;border-radius:12px;border:1px solid #e6edf4;margin-bottom:20px}.collapsible-header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;cursor:pointer;user-select:none}.collapsible-header:hover{background:#eef4fa;border-radius:12px}.collapsible-header strong{font-size:15px;color:#1a2b4a}.collapsible-header .arrow{transition:transform .3s;font-size:18px}.collapsible-body{padding:0 18px 18px 18px;display:none}.collapsible-body.open{display:block}.manager-table{width:100%;border-collapse:collapse;font-size:13px}.manager-table th{background:#e2eaf5;color:#1a2b4a;padding:6px 8px;text-align:left}.manager-table td{padding:4px 8px;border-bottom:1px solid #e9edf4}.manager-table input{width:100%;padding:4px 6px;border:1px solid #d0d9e8;border-radius:4px}.btn-sm{padding:4px 12px;border:none;border-radius:20px;font-weight:600;cursor:pointer;font-size:12px}.btn-add{background:#0078d4;color:#fff}.btn-add:hover{background:#005a9e}.btn-del{background:#d13438;color:#fff}.btn-del:hover{background:#a1282b}.table-wrap{overflow-x:auto;margin:15px 0}table{width:100%;border-collapse:collapse;font-size:14px}th{background:#1e3a5f;color:#fff;padding:10px 6px;text-align:center;white-space:nowrap}td{padding:6px;border-bottom:1px solid #e9edf4;text-align:center;vertical-align:middle}td input,td select{width:100%;padding:4px 4px;border:1px solid #d9e1ec;border-radius:4px;text-align:center;background:#fff;font-size:13px}.del-btn{background:0 0;border:none;color:#d13438;font-weight:700;cursor:pointer;font-size:18px}.actual-input{width:90px}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}.two-col .col{background:#f9fcff;padding:12px;border-radius:8px;border:1px solid #dde6f0}.two-col .col h4{margin:0 0 8px 0;color:#1a2b4a}.summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;background:#eaf3ff;padding:18px;border-radius:12px;margin:15px 0 20px 0}.summary-col{display:flex;flex-direction:column;gap:8px}.summary-col h3{margin:0 0 5px 0;font-size:16px;color:#1a2b4a;border-bottom:2px solid #b0c8e0;padding-bottom:4px}.direct-cost{background:#e6f3ff;border-left:4px solid #0078d4}.indirect-cost{background:#fff2e6;border-left:4px solid #d17a00}.summary-item{padding:8px 14px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.02);display:flex;justify-content:space-between;align-items:center}.summary-item span{font-size:14px;color:#334e68}.summary-item strong{font-size:18px;color:#0b1c33}.summary-item strong[title]{cursor:help;border-bottom:1px dashed #aaa}.stat-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}.stat-table th{background:#dce3ed;color:#1a2b4a;padding:6px 8px;text-align:center}.stat-table td{padding:5px 8px;border-bottom:1px solid #e9edf4;text-align:center}@media (max-width:1100px){.summary-grid{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}}@media (max-width:700px){.summary-grid{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr 1fr}}</style></head><body><div class="container"><div class="header-row"><h1>🏭 工作室量产成本核算器 <span class="timestamp" id="timestamp">(未更新)</span></h1><div class="btn-group"><button class="btn btn-success" onclick="x1()">📊 立即核算</button><button class="btn btn-danger" onclick="x2()">⬇️ 导出CSV</button><button onclick="x3()" style="background:0 0;border:1px solid #ccc;border-radius:30px;padding:8px 20px;cursor:pointer;">重置示例</button></div></div><div class="settings-grid"><label>电费 (元/度)<input id="elecPrice" type="number" value="0.6" step="0.01"></label><label>包装费 (元/单)<input id="packCost" type="number" value="0" step="0.1"></label><label>快递运输费 (元/单)<input id="shippingCost" type="number" value="0" step="0.5"></label><label>每单人工固定成本 (元)<input id="laborFixed" type="number" value="0" step="1"></label><label>平台抽成 (%)<input id="platRate" type="number" value="8" step="0.5"></label><label>失败率 (%)<input id="failRate" type="number" value="0" step="1"></label><label>每单运营支出 (元/单)<input id="opCost" type="number" value="0" step="0.1"></label><label>税费 (%)<input id="taxRate" type="number" value="0" step="0.1"></label><label>期望利润率 (%)<input id="profitRate" type="number" value="35" step="1"></label></div><div class="collapsible" id="customCollapse"><div class="collapsible-header" onclick="x4()"><strong>➕ 自定义其他支出 <span id="customTotalLabel" style="font-weight:400;font-size:14px;color:#1a2b4a;margin-left:10px;">(合计: ¥0.00)</span></strong><span class="arrow" id="customArrow">▼</span></div><div class="collapsible-body" id="customBody"><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;"><input id="customName" type="text" placeholder="支出名称" style="padding:4px 8px;border:1px solid #ccc;border-radius:4px;width:150px;"><input id="customAmount" type="number" placeholder="金额 (元)" style="padding:4px 8px;border:1px solid #ccc;border-radius:4px;width:120px;"><button class="btn-sm btn-add" onclick="x5()">添加</button></div><table class="manager-table"><thead><tr><th>支出名称</th><th>金额 (元)</th><th>操作</th></tr></thead><tbody id="customTableBody"></tbody></table></div></div><div class="collapsible" id="materialCollapse"><div class="collapsible-header" onclick="x6()"><strong>📦 材料与设备管理</strong><span class="arrow" id="materialArrow">▼</span></div><div class="collapsible-body" id="materialBody"><div class="two-col"><div class="col"><h4>📦 材料库</h4><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;"><input id="newMatName" type="text" placeholder="材料名称" style="padding:4px 8px;border:1px solid #ccc;border-radius:4px;width:120px;"><input id="newMatPrice" type="number" placeholder="单价(元/kg)" style="padding:4px 8px;border:1px solid #ccc;border-radius:4px;width:100px;"><button class="btn-sm btn-add" onclick="x7()">添加</button></div><table class="manager-table"><thead><tr><th>名称</th><th>单价(元/kg)</th><th>操作</th></tr></thead><tbody id="materialTableBody"></tbody></table></div><div class="col"><h4>🖨️ 设备库</h4><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;"><input id="newDeviceName" type="text" placeholder="设备名称" style="padding:4px 8px;border:1px solid #ccc;border-radius:4px;width:120px;"><input id="newDevicePower" type="number" placeholder="功率 (kW)" step="0.01" style="padding:4px 8px;border:1px solid #ccc;border-radius:4px;width:80px;"><input id="newDeviceDep" type="number" placeholder="折旧 (元/h)" step="0.01" style="padding:4px 8px;border:1px solid #ccc;border-radius:4px;width:100px;"><button class="btn-sm btn-add" onclick="x8()">添加</button></div><table class="manager-table"><thead><tr><th>名称</th><th>功率(kW)</th><th>折旧(元/h)</th><th>操作</th></tr></thead><tbody id="deviceTableBody"></tbody></table></div></div></div></div><div style="margin:20px 0 10px 0;"><div class="collapsible-header" style="background:#eaf3ff;border-radius:12px;cursor:default;padding:12px 18px;border:1px solid #b0c8e0;"><strong style="font-size:17px;">📊 成本与利润汇总</strong></div><div class="summary-grid" id="summaryArea"><div class="summary-col"><h3>📋 成本明细</h3><div class="summary-item direct-cost"><span>📦 物料成本</span><strong id="sumMaterial">¥0</strong></div><div class="summary-item direct-cost"><span>⚡ 电费</span><strong id="sumElectric">¥0</strong></div><div class="summary-item direct-cost"><span>📦 包装</span><strong id="sumPack">¥0</strong></div><div class="summary-item direct-cost"><span>🚚 快递运输费</span><strong id="sumShipping">¥0</strong></div><div class="summary-item direct-cost"><span>👤 人工固定成本</span><strong id="sumLaborFixed">¥0</strong></div><div class="summary-item direct-cost"><span>📉 平台抽成</span><strong id="sumPlatFee" style="color:#d13438;">¥0</strong></div><div class="summary-item indirect-cost"><span>⚠️ 失败风险</span><strong id="sumRisk">¥0</strong></div><div class="summary-item indirect-cost"><span>🏢 运营支出</span><strong id="sumOpCost">¥0</strong></div><div class="summary-item indirect-cost"><span>➕ 其他支出</span><strong id="sumOtherCost">¥0</strong></div><div class="summary-item indirect-cost"><span>🧾 税费</span><strong id="sumTax" style="color:#d13438;">¥0</strong></div></div><div class="summary-col"><h3>📊 成本汇总</h3><div class="summary-item"><span>💰 直接成本（毛利扣减项）</span><strong id="sumDirectCost" style="color:#00457e;">¥0</strong></div><div class="summary-item"><span>📊 总成本（含全部费用）</span><strong id="sumTotalCost" style="color:#00457e;">¥0</strong></div><div class="summary-item"><span>💡 建议总营收</span><strong id="sumRevenue" style="color:#2e7d32;">¥0</strong></div></div><div class="summary-col"><h3>📈 利润汇总</h3><div class="summary-item"><span>💰 实际总营收</span><strong id="sumActualRevenue" style="color:#0b5e9e;">¥0</strong></div><div class="summary-item"><span>📊 实际毛利</span><strong id="sumGrossProfit" style="color:#1a7a1a;" title="毛利 = 实际总营收 − 直接成本（物料+电费+包装+快递+人工固定+平台抽成）">¥0</strong></div><div class="summary-item"><span>📊 毛利率</span><strong id="sumGrossProfitRate" style="color:#1a7a1a;">0%</strong></div><div class="summary-item"><span>📈 实际净利润</span><strong id="sumActualProfit" style="color:#b45f06;" title="净利润 = 实际总营收 − 总成本（直接成本+失败风险+运营支出+其他支出+税费）">¥0</strong></div><div class="summary-item"><span>📈 净利润率</span><strong id="sumActualProfitRate" style="color:#b45f06;">0%</strong></div></div></div></div><div class="collapsible" id="orderCollapse"><div class="collapsible-header" onclick="x9()"><strong>📋 订单管理</strong><span class="arrow" id="orderArrow">▼</span></div><div class="collapsible-body open" id="orderBody"><div style="margin:10px 0;"><button class="btn btn-primary" onclick="x10()">＋ 添加订单</button></div><div class="table-wrap"><table><thead><tr><th>订单名称</th><th>材料</th><th>耗材(g)</th><th>打印设备</th><th>打印时长(h)</th><th>后处理(h)</th><th>数量(件)</th><th>单件成本</th><th>总成本(元)</th><th>建议售价(元)</th><th>实际售价(总价)</th><th>实际利润率(%)</th><th>操作</th></tr></thead><tbody id="tableBody"></tbody></table></div></div></div><div class="collapsible" id="statCollapse" style="margin-top:20px;"><div class="collapsible-header" onclick="x11()" style="justify-content:space-between;"><span style="display:flex;align-items:center;gap:8px;"><strong>📊 数据统计面板</strong><button class="btn-refresh" onclick="event.stopPropagation();x1();">🔄 刷新</button></span><span class="arrow" id="statArrow">▲</span></div><div class="collapsible-body open" id="statBody"><h4 style="margin:10px 0 5px 0;">按材料汇总</h4><div class="table-wrap"><table class="stat-table" id="statMaterialTable"><thead><tr><th>材料</th><th>总耗材(g)</th><th>总材料成本(元)</th><th>订单数</th><th>总产品件数</th><th>平均单件耗材(g)</th></tr></thead><tbody id="statMaterialBody"></tbody></table></div><h4 style="margin:10px 0 5px 0;">按设备汇总</h4><div class="table-wrap"><table class="stat-table" id="statPrinterTable"><thead><tr><th>设备</th><th>总打印时长(h)</th><th>订单数</th></tr></thead><tbody id="statPrinterBody"></tbody></table></div><h4 style="margin:10px 0 5px 0;">总览</h4><div style="display:flex;gap:20px;flex-wrap:wrap;background:#fff;padding:10px 15px;border-radius:8px;border:1px solid #e6edf4;"><div><strong>总订单数：</strong><span id="totalOrders">0</span></div><div><strong>总产品件数：</strong><span id="totalItems">0</span></div><div><strong>总耗材克数：</strong><span id="totalGrams">0</span> g</div><div><strong>总材料成本：</strong><span id="totalMatCost">¥0</span></div><div><strong>总打印时长：</strong><span id="totalPrintHours">0</span> h</div></div></div></div></div><script>
+// 防右键和Ctrl+U
+document.addEventListener('contextmenu', function(e){e.preventDefault();});
+document.addEventListener('keydown', function(e){if(e.ctrlKey && (e.key==='u'||e.key==='U')){e.preventDefault();}});
+
+// 干扰代码块
+var _0x0=0;
+for(var _0x1=0;_0x1<10;_0x1++){_0x0+=Math.random()*100;}
+if(_0x0===0){var _0x2='nop';}else{var _0x2='also nop';}
+(function(){var _0x3=100;while(_0x3>0){_0x3--;}})();
+
+// ----- 数据定义（绝对不重名）-----
+var _a0 = [];  // 自定义支出
+var _b0 = [    // 材料库
+    { name: 'PLA', price: 35 },
+    { name: 'ABS', price: 95 },
+    { name: 'PETG', price: 20 },
+    { name: 'TPU', price: 130 },
+    { name: '树脂', price: 50 },
+    { name: '尼龙', price: 160 }
+];
+var _c0 = [    // 设备库
+    { name: 'A1', power: 0.12, dep: 0 },
+    { name: 'KX', power: 0.15, dep: 0 },
+    { name: 'X1C', power: 0.20, dep: 0 },
+    { name: '土星4UPro', power: 0.18, dep: 0 },
+    { name: '自定义', power: 0.15, dep: 0 }
+];
+
+// ----- 折叠面板控制（函数名简短）-----
+function x4(){var a=document.getElementById('customBody'),b=document.getElementById('customArrow');a.classList.toggle('open');b.textContent=a.classList.contains('open')?'▲':'▼';}
+function x6(){var a=document.getElementById('materialBody'),b=document.getElementById('materialArrow');a.classList.toggle('open');b.textContent=a.classList.contains('open')?'▲':'▼';}
+function x9(){var a=document.getElementById('orderBody'),b=document.getElementById('orderArrow');a.classList.toggle('open');b.textContent=a.classList.contains('open')?'▲':'▼';}
+function x11(){var a=document.getElementById('statBody'),b=document.getElementById('statArrow');a.classList.toggle('open');b.textContent=a.classList.contains('open')?'▲':'▼';}
+
+// ----- 自定义支出操作（函数名简短，无重名）-----
+function r1(){
+    var t=document.getElementById('customTableBody');
+    t.innerHTML='';
+    var total=0;
+    _a0.forEach(function(item,idx){
+        total+=item.amount;
+        var tr=document.createElement('tr');
+        tr.innerHTML='<td><input type="text" value="'+item.name+'" onchange="r2('+idx+',\'name\',this.value)" style="width:100%;"></td><td><input type="number" value="'+item.amount+'" onchange="r2('+idx+',\'amount\',parseFloat(this.value)||0)" style="width:100%;"></td><td><button class="btn-sm btn-del" onclick="r3('+idx+')">删除</button></td>';
+        t.appendChild(tr);
+    });
+    document.getElementById('customTotalLabel').textContent='(合计: ¥'+total.toFixed(2)+')';
+    // 垃圾
+    if(1===2){var _d=0; for(var _e=0;_e<3;_e++){_d++;}}
+}
+function x5(){
+    var n=document.getElementById('customName');
+    var a=document.getElementById('customAmount');
+    var name=n.value.trim();
+    var amount=parseFloat(a.value);
+    if(!name||isNaN(amount)||amount<0){alert('请输入有效的支出名称和金额');return;}
+    _a0.push({name:name,amount:amount});
+    n.value='';a.value='';
+    r1();
+    x1();
+}
+function r2(idx,field,value){
+    if(field==='name')_a0[idx].name=value;
+    else if(field==='amount')_a0[idx].amount=value;
+    r1();
+    x1();
+}
+function r3(idx){
+    _a0.splice(idx,1);
+    r1();
+    x1();
+}
+
+// ----- 材料管理（函数名简短）-----
+function m1(){
+    var t=document.getElementById('materialTableBody');
+    t.innerHTML='';
+    _b0.forEach(function(mat,idx){
+        var tr=document.createElement('tr');
+        tr.innerHTML='<td><input type="text" value="'+mat.name+'" onchange="m2('+idx+',\'name\',this.value)" style="width:100%;"></td><td><input type="number" value="'+mat.price+'" onchange="m2('+idx+',\'price\',parseFloat(this.value)||0)" style="width:100%;"></td><td><button class="btn-sm btn-del" onclick="m3('+idx+')">删除</button></td>';
+        t.appendChild(tr);
+    });
+    m4();
+}
+function x7(){
+    var n=document.getElementById('newMatName');
+    var p=document.getElementById('newMatPrice');
+    var name=n.value.trim();
+    var price=parseFloat(p.value);
+    if(!name||isNaN(price)||price<0){alert('请输入有效的材料名称和价格');return;}
+    _b0.push({name:name,price:price});
+    n.value='';p.value='';
+    m1();
+    x1();
+}
+function m2(idx,field,value){
+    if(field==='name')_b0[idx].name=value;
+    else if(field==='price')_b0[idx].price=value;
+    m4();
+    x1();
+}
+function m3(idx){
+    if(_b0.length<=1){alert('至少保留一种材料');return;}
+    _b0.splice(idx,1);
+    m1();
+    x1();
+}
+function m4(){
+    var selects=document.querySelectorAll('.mat-select');
+    selects.forEach(function(sel){
+        var cur=sel.value;
+        sel.innerHTML=_b0.map(function(m){return'<option value="'+m.name+'">'+m.name+'</option>';}).join('');
+        if(_b0.some(function(m){return m.name===cur;})){sel.value=cur;}else{sel.value=_b0[0]?.name||'';}
+    });
+}
+function m5(name){
+    var mat=_b0.find(function(m){return m.name===name;});
+    return mat?mat.price:0;
+}
+
+// ----- 设备管理（函数名简短）-----
+function d1(){
+    var t=document.getElementById('deviceTableBody');
+    t.innerHTML='';
+    _c0.forEach(function(dev,idx){
+        var tr=document.createElement('tr');
+        tr.innerHTML='<td><input type="text" value="'+dev.name+'" onchange="d2('+idx+',\'name\',this.value)" style="width:100%;"></td><td><input type="number" value="'+dev.power+'" step="0.01" onchange="d2('+idx+',\'power\',parseFloat(this.value)||0)" style="width:100%;"></td><td><input type="number" value="'+dev.dep+'" step="0.01" onchange="d2('+idx+',\'dep\',parseFloat(this.value)||0)" style="width:100%;"></td><td><button class="btn-sm btn-del" onclick="d3('+idx+')">删除</button></td>';
+        t.appendChild(tr);
+    });
+    d4();
+}
+function x8(){
+    var n=document.getElementById('newDeviceName');
+    var p=document.getElementById('newDevicePower');
+    var d=document.getElementById('newDeviceDep');
+    var name=n.value.trim();
+    var power=parseFloat(p.value);
+    var dep=parseFloat(d.value)||0;
+    if(!name||isNaN(power)||power<0){alert('请输入有效的设备名称和功率');return;}
+    _c0.push({name:name,power:power,dep:dep});
+    n.value='';p.value='';d.value='';
+    d1();
+    x1();
+}
+function d2(idx,field,value){
+    if(field==='name')_c0[idx].name=value;
+    else if(field==='power')_c0[idx].power=value;
+    else if(field==='dep')_c0[idx].dep=value;
+    d4();
+    x1();
+}
+function d3(idx){
+    if(_c0.length<=1){alert('至少保留一种设备');return;}
+    _c0.splice(idx,1);
+    d1();
+    x1();
+}
+function d4(){
+    var selects=document.querySelectorAll('.printer-select');
+    selects.forEach(function(sel){
+        var cur=sel.value;
+        sel.innerHTML=_c0.map(function(d){return'<option value="'+d.name+'">'+d.name+'</option>';}).join('');
+        if(_c0.some(function(d){return d.name===cur;})){sel.value=cur;}else{sel.value=_c0[0]?.name||'';}
+    });
+}
+function d5(name){
+    var dev=_c0.find(function(d){return d.name===name;});
+    return dev?{power:dev.power,dep:dev.dep}:{power:0,dep:0};
+}
+
+// ----- 参数获取 -----
+function p1(){
+    var e=parseFloat(document.getElementById('elecPrice').value);
+    var pa=parseFloat(document.getElementById('packCost').value);
+    var sh=parseFloat(document.getElementById('shippingCost').value);
+    var la=parseFloat(document.getElementById('laborFixed').value);
+    var pl=parseFloat(document.getElementById('platRate').value);
+    var fa=parseFloat(document.getElementById('failRate').value);
+    var op=parseFloat(document.getElementById('opCost').value);
+    var ta=parseFloat(document.getElementById('taxRate').value);
+    var pr=parseFloat(document.getElementById('profitRate').value);
+    return{
+        elec:isNaN(e)?0:e,
+        pack:isNaN(pa)?0:pa,
+        shipping:isNaN(sh)?0:sh,
+        laborFixed:isNaN(la)?0:la,
+        plat:isNaN(pl)?0:pl/100,
+        fail:isNaN(fa)?0:fa/100,
+        op:isNaN(op)?0:op,
+        tax:isNaN(ta)?0:ta/100,
+        profit:isNaN(pr)?0:pr/100
+    };
+}
+
+// ----- 计算单行 -----
+function c1(row){
+    var matName=row.querySelector('.mat-select').value;
+    var devName=row.querySelector('.printer-select').value;
+    var grams=parseFloat(row.querySelector('.grams').value)||0;
+    var hours=parseFloat(row.querySelector('.hours').value)||0;
+    var post=parseFloat(row.querySelector('.post').value)||0;
+    var qty=parseInt(row.querySelector('.qty').value)||1;
+    var p=p1();
+    var matPrice=m5(matName);
+    var dev=d5(devName);
+    var power=dev.power;
+    var matCost=(grams/1000)*matPrice;
+    var elecCost=hours*power*p.elec;
+    var laborCost=p.laborFixed;
+    var packCost=p.pack;
+    var shippingCost=p.shipping;
+    var unitBase=matCost+elecCost+(packCost+shippingCost+laborCost)/qty;
+    var unitWithRisk=unitBase;
+    if(p.fail<1){unitWithRisk=unitBase/(1-p.fail);}
+    var denom=1-p.plat-p.profit;
+    var pricePerUnit=0;
+    if(denom>0){pricePerUnit=unitWithRisk/denom;}else{pricePerUnit=unitWithRisk;}
+    var totalRevenue=pricePerUnit*qty;
+    return{
+        matCost:matCost,elecCost:elecCost,packCost:packCost,shippingCost:shippingCost,laborCost:laborCost,
+        unitBase:unitBase,totalBase:unitBase*qty,
+        unitWithRisk:unitWithRisk,totalWithRisk:unitWithRisk*qty,
+        totalRevenue:totalRevenue,
+        riskCost:(unitWithRisk-unitBase)*qty,
+        opCost:p.op
+    };
+}
+
+// ----- 双向关联 -----
+function bind(row){
+    var priceInput=row.querySelector('.actual-price');
+    var profitInput=row.querySelector('.actual-profit');
+    priceInput.removeEventListener('input', h1);
+    profitInput.removeEventListener('input', h2);
+    function h1(){
+        var totalCostText=row.querySelector('.total-cost').textContent;
+        if(totalCostText==='-'||totalCostText==='')return;
+        var totalCost=parseFloat(totalCostText);
+        if(isNaN(totalCost))return;
+        var price=parseFloat(priceInput.value);
+        if(isNaN(price)||price<=0){profitInput.value='';return;}
+        var plat=p1().plat;
+        var actualProfit=price*(1-plat)-totalCost;
+        var rate=price>0?(actualProfit/price)*100:0;
+        profitInput.value=rate.toFixed(2);
+        x1();
+    }
+    function h2(){
+        var totalCostText=row.querySelector('.total-cost').textContent;
+        if(totalCostText==='-'||totalCostText==='')return;
+        var totalCost=parseFloat(totalCostText);
+        if(isNaN(totalCost))return;
+        var rate=parseFloat(profitInput.value);
+        if(isNaN(rate)){priceInput.value='';return;}
+        var plat=p1().plat;
+        var denom=1-plat-rate/100;
+        if(denom<=0){alert('利润率 + 抽成率 不能 ≥ 100%');profitInput.value='';return;}
+        var price=totalCost/denom;
+        if(price>0){priceInput.value=price.toFixed(2);}else{priceInput.value='';}
+        x1();
+    }
+    priceInput.addEventListener('input', h1);
+    profitInput.addEventListener('input', h2);
+}
+
+// ----- 添加订单行 -----
+function x10(data){
+    var tbody=document.getElementById('tableBody');
+    var tr=document.createElement('tr');
+    var matOpts=_b0.map(function(m){return'<option value="'+m.name+'">'+m.name+'</option>';}).join('');
+    var devOpts=_c0.map(function(d){return'<option value="'+d.name+'">'+d.name+'</option>';}).join('');
+    var name=data?.name||'模型'+(tbody.children.length+1);
+    var grams=data?.grams||50;
+    var hours=data?.hours||2;
+    var post=data?.post||0;
+    var qty=data?.qty||1;
+    var actPrice=data?.actualPrice!==undefined?data.actualPrice:'';
+    var actProfit=data?.actualProfit!==undefined?data.actualProfit:'';
+    tr.innerHTML='<td><input type="text" class="order-name" value="'+name+'" style="min-width:70px;"></td><td><select class="mat-select">'+matOpts+'</select></td><td><input type="number" class="grams" value="'+grams+'" step="1" style="width:70px;"></td><td><select class="printer-select">'+devOpts+'</select></td><td><input type="number" class="hours" value="'+hours+'" step="0.5" style="width:70px;"></td><td><input type="number" class="post" value="'+post+'" step="0.1" style="width:60px;"></td><td><input type="number" class="qty" value="'+qty+'" step="1" min="1" style="width:60px;"></td><td class="unit-cost">-</td><td class="total-cost">-</td><td class="suggest-price">-</td><td><input type="number" class="actual-price" step="0.01" min="0" style="width:90px;" value="'+actPrice+'" placeholder="输入售价"></td><td><input type="number" class="actual-profit" step="0.01" min="0" max="100" style="width:80px;" value="'+actProfit+'" placeholder="利润率%"></td><td><button class="del-btn" onclick="this.closest(\'tr\').remove();x1();">✕</button></td>';
+    var inputs=tr.querySelectorAll('input, select');
+    inputs.forEach(function(inp){inp.addEventListener('change',x1);});
+    bind(tr);
+    if(data){
+        if(data.material)tr.querySelector('.mat-select').value=data.material;
+        if(data.device)tr.querySelector('.printer-select').value=data.device;
+    }
+    tbody.appendChild(tr);
+    x1();
+}
+
+// ----- 核心计算（函数名x1）-----
+function x1(){
+    var rows=document.querySelectorAll('#tableBody tr');
+    var sM=0,sE=0,sP=0,sS=0,sL=0,sR=0,sO=0,sOth=0,sTax=0;
+    var sD=0,sTot=0,sRev=0,sAct=0;
+    var matStats={},printerStats={};
+    var tOrd=0,tItems=0,tG=0,tMC=0,tPH=0;
+    // 垃圾代码
+    for(var _z=0;_z<2;_z++){var _zz=_z*_z;}
+    rows.forEach(function(row){
+        try{
+            var res=c1(row);
+            var qty=parseInt(row.querySelector('.qty').value)||1;
+            var matName=row.querySelector('.mat-select').value;
+            var printer=row.querySelector('.printer-select').value;
+            var grams=parseFloat(row.querySelector('.grams').value)||0;
+            var hours=parseFloat(row.querySelector('.hours').value)||0;
+            var suggest=res.totalRevenue;
+            var actInput=row.querySelector('.actual-price');
+            if(actInput.value===''){actInput.value=suggest.toFixed(2);}
+            var actPrice=parseFloat(actInput.value);
+            var valid=!isNaN(actPrice)&&actPrice>0;
+            if(valid){sAct+=actPrice;}
+            sM+=res.matCost*qty;
+            sE+=res.elecCost*qty;
+            sP+=res.packCost;
+            sS+=res.shippingCost;
+            sL+=res.laborCost;
+            sR+=res.riskCost;
+            sO+=res.opCost;
+            sRev+=res.totalRevenue;
+            row.querySelector('.unit-cost').textContent=res.unitWithRisk.toFixed(2);
+            row.querySelector('.total-cost').textContent=res.totalWithRisk.toFixed(2);
+            row.querySelector('.suggest-price').textContent=res.totalRevenue.toFixed(2);
+            var profInput=row.querySelector('.actual-profit');
+            if(valid){
+                var plat=p1().plat;
+                var net=actPrice*(1-plat)-res.totalWithRisk;
+                var rate=actPrice>0?(net/actPrice)*100:0;
+                profInput.value=rate.toFixed(2);
+            }else{profInput.value='';}
+            if(!matStats[matName])matStats[matName]={grams:0,cost:0,orders:0,items:0};
+            matStats[matName].grams+=grams*qty;
+            matStats[matName].cost+=res.matCost*qty;
+            matStats[matName].orders+=1;
+            matStats[matName].items+=qty;
+            if(!printerStats[printer])printerStats[printer]={hours:0,orders:0};
+            printerStats[printer].hours+=hours;
+            printerStats[printer].orders+=1;
+            tOrd+=1;tItems+=qty;tG+=grams*qty;tMC+=res.matCost*qty;tPH+=hours;
+        }catch(e){}
+    });
+    var other=_a0.reduce(function(a,b){return a+b.amount;},0);
+    sOth=other;
+    var p=p1();
+    var platFee=sAct*p.plat;
+    var taxFee=sAct*p.tax;
+    var direct=sM+sE+sP+sS+sL+platFee;
+    var totalAll=direct+sR+sO+other+taxFee;
+    var gross=sAct-direct;
+    var grossRate=sAct>0?(gross/sAct)*100:0;
+    var net=sAct-totalAll;
+    var netRate=sAct>0?(net/sAct)*100:0;
+    document.getElementById('sumMaterial').textContent='¥'+sM.toFixed(2);
+    document.getElementById('sumElectric').textContent='¥'+sE.toFixed(2);
+    document.getElementById('sumPack').textContent='¥'+sP.toFixed(2);
+    document.getElementById('sumShipping').textContent='¥'+sS.toFixed(2);
+    document.getElementById('sumLaborFixed').textContent='¥'+sL.toFixed(2);
+    document.getElementById('sumPlatFee').textContent='¥'+platFee.toFixed(2);
+    document.getElementById('sumRisk').textContent='¥'+sR.toFixed(2);
+    document.getElementById('sumOpCost').textContent='¥'+sO.toFixed(2);
+    document.getElementById('sumOtherCost').textContent='¥'+other.toFixed(2);
+    document.getElementById('sumTax').textContent='¥'+taxFee.toFixed(2);
+    document.getElementById('sumDirectCost').textContent='¥'+direct.toFixed(2);
+    document.getElementById('sumTotalCost').textContent='¥'+totalAll.toFixed(2);
+    document.getElementById('sumRevenue').textContent='¥'+sRev.toFixed(2);
+    document.getElementById('sumActualRevenue').textContent='¥'+sAct.toFixed(2);
+    document.getElementById('sumGrossProfit').textContent='¥'+gross.toFixed(2);
+    document.getElementById('sumGrossProfitRate').textContent=grossRate.toFixed(2)+'%';
+    document.getElementById('sumActualProfit').textContent='¥'+net.toFixed(2);
+    document.getElementById('sumActualProfitRate').textContent=netRate.toFixed(2)+'%';
+    // 统计面板
+    var matBody=document.getElementById('statMaterialBody');
+    matBody.innerHTML='';
+    for(var m in matStats){
+        var st=matStats[m];
+        var tr=document.createElement('tr');
+        var avg=st.items>0?(st.grams/st.items).toFixed(2):'0';
+        tr.innerHTML='<td><strong>'+m+'</strong></td><td>'+st.grams.toFixed(2)+'</td><td>'+st.cost.toFixed(2)+'</td><td>'+st.orders+'</td><td>'+st.items+'</td><td>'+avg+'</td>';
+        matBody.appendChild(tr);
+    }
+    var printerBody=document.getElementById('statPrinterBody');
+    printerBody.innerHTML='';
+    for(var pn in printerStats){
+        var st=printerStats[pn];
+        var tr=document.createElement('tr');
+        tr.innerHTML='<td><strong>'+pn+'</strong></td><td>'+st.hours.toFixed(2)+'</td><td>'+st.orders+'</td>';
+        printerBody.appendChild(tr);
+    }
+    document.getElementById('totalOrders').textContent=tOrd;
+    document.getElementById('totalItems').textContent=tItems;
+    document.getElementById('totalGrams').textContent=tG.toFixed(2);
+    document.getElementById('totalMatCost').textContent='¥'+tMC.toFixed(2);
+    document.getElementById('totalPrintHours').textContent=tPH.toFixed(2);
+    // 时间戳
+    var now=new Date();
+    var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('timestamp').textContent='(更新于 '+ts+')';
+}
+
+// ----- 导出CSV -----
+function x2(){
+    var csv="订单名称,材料,耗材(g),设备,打印时长,后处理,数量,单件成本,总成本,建议售价,实际售价,实际利润率\n";
+    document.querySelectorAll('#tableBody tr').forEach(function(row){
+        var name=row.querySelector('.order-name').value;
+        var mat=row.querySelector('.mat-select').value;
+        var grams=row.querySelector('.grams').value;
+        var printer=row.querySelector('.printer-select').value;
+        var hours=row.querySelector('.hours').value;
+        var post=row.querySelector('.post').value;
+        var qty=row.querySelector('.qty').value;
+        var unitCost=row.querySelector('.unit-cost').textContent;
+        var totalCost=row.querySelector('.total-cost').textContent;
+        var suggest=row.querySelector('.suggest-price').textContent;
+        var actualPrice=row.querySelector('.actual-price').value;
+        var actualProfit=row.querySelector('.actual-profit').value;
+        csv+=name+','+mat+','+grams+','+printer+','+hours+','+post+','+qty+','+unitCost+','+totalCost+','+suggest+','+actualPrice+','+actualProfit+'\n';
+    });
+    var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+    var link=document.createElement('a');
+    link.href=URL.createObjectURL(blob);
+    link.download='成本核算_'+new Date().toISOString().slice(0,10)+'.csv';
+    link.click();
+}
+
+// ----- 重置示例 -----
+function x3(){
+    document.getElementById('tableBody').innerHTML='';
+    var demo=[
+        {name:'龙猫摆件',grams:45,hours:3.5,post:0,qty:1},
+        {name:'手机支架',grams:28,hours:2.0,post:0,qty:1},
+        {name:'手办底座',grams:80,hours:5.0,post:0,qty:1}
+    ];
+    demo.forEach(function(d){x10(d);});
+    document.querySelectorAll('#tableBody tr').forEach(function(row,idx){
+        if(idx===0){row.querySelector('.mat-select').value='PLA';row.querySelector('.printer-select').value='A1';}
+        if(idx===1){row.querySelector('.mat-select').value='PETG';row.querySelector('.printer-select').value='KX';}
+        if(idx===2){row.querySelector('.mat-select').value='树脂';row.querySelector('.printer-select').value='土星4UPro';}
+    });
+    _a0=[];
+    r1();
+    x1();
+}
+
+// ----- 初始化 -----
+document.addEventListener('DOMContentLoaded',function(){
+    document.getElementById('customBody').classList.add('open');
+    document.getElementById('customArrow').textContent='▲';
+    document.getElementById('orderBody').classList.add('open');
+    document.getElementById('orderArrow').textContent='▲';
+    document.getElementById('statBody').classList.add('open');
+    document.getElementById('statArrow').textContent='▲';
+    document.getElementById('materialArrow').textContent='▼';
+    m1();
+    d1();
+    r1();
+    x3();
+});
+</script></body></html>
